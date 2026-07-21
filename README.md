@@ -12,7 +12,7 @@ This project investigates key factors influencing overall instructor evaluation 
 ## Key Findings & Model Improvements
 * **Multicollinearity Management:** Variance Inflation Factor (VIF) analysis revealed strong collinearity between course difficulty and workload metrics, guiding variable selection for candidate models.
 * **OLS Assumption Violations:** Baseline Model I exhibited severe heteroscedasticity (funneling residuals) and non-normal right-skewed error distributions.
-* **Optimal Remediation:** Application of a **Box-Cox Transformation ($\lambda \approx 3.55$)** stabilized residual variance and normalized error distribution, significantly improving model goodness-of-fit and parameter reliability.
+* **Optimal Improvement:** Application of a **Box-Cox Transformation ($\lambda \approx 3.55$)** stabilized residual variance and normalized error distribution, significantly improving model goodness-of-fit and parameter reliability.
 
 ---
 
