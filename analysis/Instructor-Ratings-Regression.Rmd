@@ -45,6 +45,7 @@ The analysis was conducted using a comprehensive dataset tracking instructor rat
 ```{r}
 #Core data manipulation and visualization (loads dplyr, ggplot2, tidyr, etc.)
 library(tidyverse)
+library(here)
 
 #Modeling, diagnostics, and tidying
 library(car)
@@ -58,6 +59,8 @@ library(knitr)
 library(kableExtra)
 library(bookdown)
 library(ggcorrplot)
+library(patchwork)
+library(ggfortify)
 ```
 
 ### Helper Functions
@@ -153,7 +156,7 @@ num_df <- num_df %>%
 cor_matrix <- cor(num_df)
 
 #Plot an elegant heatmap showing only the lower triangle
-ggcorrplot(cor_matrix, 
+p_corr <- ggcorrplot(cor_matrix, 
            hc.order = TRUE, 
            type = "lower",
            lab = TRUE,           # Adds text labels inside squares
@@ -162,6 +165,15 @@ ggcorrplot(cor_matrix,
            colors = c("#6D9EC1", "white", "#E46726"), # Clean professional gradient
            title = "Correlation Heatmap of Model Variables",
            ggtheme = theme_minimal())
+p_corr
+#Save as PNG
+ggsave(
+  filename = "../figures/correlation_heatmap.png", 
+  plot = p_corr, 
+  width = 8, 
+  height = 6, 
+  dpi = 300
+)
 ```
 
 # Methodology
@@ -212,14 +224,42 @@ A residuals versus fitted values plot with Breusch - Pagan test. And a normal Q 
 
 ```{r model-1-diagnostics, fig.show = "hold", out.width = "50%", dpi = 100, fig.cap = "Diagnostic Plots for the Full Additive Model I"}
 
-#Residuals vs Fitted
-plot(lm1, which = 1, col = rgb(0, 0, 0, 0.6), pch = 16)
+#Augment the model to get a tidy data frame with residuals (.resid) & fitted values (.fitted)
+diag_df <- augment(lm1)
+
+#Residuals vs Fitted Plot
+p_res <- ggplot(diag_df, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_smooth(se = FALSE, color = "blue", method = "loess", formula = y ~ x) +
+  labs(
+    title = "Baseline Model: Residuals vs Fitted",
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal(base_size = 12)
 
 #Normal Q-Q Plot
-plot(lm1, which = 2, col = rgb(0, 0, 0, 0.6), pch = 16)
+p_qq <- ggplot(diag_df, aes(sample = .resid)) +
+  stat_qq(alpha = 0.6) +
+  stat_qq_line(color = "red") +
+  labs(
+    title = "Baseline Model: Normal Q-Q",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal(base_size = 12)
 
-save.image()
-
+#Combine side-by-side & save cleanly with ggsave()
+baseline_diag <- p_res + p_qq
+baseline_diag
+ggsave(
+  filename = "../figures/baseline_diagnostics.png",
+  plot = baseline_diag,
+  width = 10,
+  height = 4.5,
+  dpi = 100
+)
 #Breusch- Pagan Test
 bp1 <- bptest(lm1)
 bp1
@@ -330,9 +370,41 @@ shap3
 The assumptions are still violated, therefore check for transformations.
 
 ```{r}
-#Try transformation with interaction model
-summary(powerTransform(lm3))
-boxcox(lm3, lambda = seq(2.2, 5.0, by = 0.05))
+#Extract boxcox coordinates into a data frame (plot = FALSE prevents base R from plotting)
+bc_data <- boxcox(lm3, lambda = seq(2.2, 5.0, by = 0.05), plot = FALSE)
+bc_df <- data.frame(lambda = bc_data$x, loglik = bc_data$y)
+
+#Find optimal lambda (maximum log-likelihood)
+opt_lambda <- bc_df$lambda[which.max(bc_df$loglik)]
+
+#Build ggplot
+p_boxcox <- ggplot(bc_df, aes(x = lambda, y = loglik)) +
+  geom_line(linewidth = 1, color = "steelblue") +
+  geom_vline(xintercept = opt_lambda, linetype = "dashed", color = "red") +
+  annotate(
+    "text", 
+    x = opt_lambda + 0.15, 
+    y = min(bc_df$loglik) + 2, 
+    label = paste0("Optimal λ = ", round(opt_lambda, 2)), 
+    color = "red", 
+    hjust = 0
+  ) +
+  labs(
+    title = "Box-Cox Log-Likelihood Profile",
+    subtitle = "Transforming response variable for Model III",
+    x = expression(lambda),
+    y = "Log-Likelihood"
+  ) +
+  theme_minimal(base_size = 12)
+p_boxcox
+#Save cleanly via ggsave
+ggsave(
+  filename = here("figures", "boxcox_transformation.png"),
+  plot = p_boxcox,
+  width = 8,
+  height = 5,
+  dpi = 300
+)
 ```
 
 # Results
@@ -402,14 +474,43 @@ create_model_summary(lm5, "Regression Statistics: Transformed Model IV")
 A residuals versus fitted values plot with Breusch - Pagan test. And a normal Q - Q plot with Shapiro - Wilk test.
 
 ```{r model-4-diagnostics, fig.show = "hold", out.width = "50%", dpi = 100, fig.cap = "Diagnostic Plots for the Final Transformed Model IV"}
-#Residuals vs Fitted
-plot(lm5, which = 1, col = rgb(0, 0, 0, 0.6), pch = 16)
+
+#Augment the model to get a tidy data frame with residuals (.resid) & fitted values (.fitted)
+diag_df_final <- augment(lm5)
+
+#Residuals vs Fitted Plot
+p_res_final <- ggplot(diag_df_final, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_smooth(se = FALSE, color = "blue", method = "loess", formula = y ~ x) +
+  labs(
+    title = "Final Model: Residuals vs Fitted",
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal(base_size = 12)
 
 #Normal Q-Q Plot
-plot(lm5, which = 2, col = rgb(0, 0, 0, 0.6), pch = 16)
+p_qq_final <- ggplot(diag_df_final, aes(sample = .resid)) +
+  stat_qq(alpha = 0.6) +
+  stat_qq_line(color = "red") +
+  labs(
+    title = "Final Model: Normal Q-Q",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal(base_size = 12)
+#Combine side-by-side & save cleanly with ggsave()
+final_diagnostics <- p_res_final + p_qq_final
+final_diagnostics
 
-save.image()
-
+ggsave(
+  filename = "../figures/final_diagnostics.png",
+  plot = final_diagnostics,
+  width = 10,
+  height = 4.5,
+  dpi = 100
+)
 #Breusch- Pagan Test
 bp5 <- bptest(lm5)
 bp5
