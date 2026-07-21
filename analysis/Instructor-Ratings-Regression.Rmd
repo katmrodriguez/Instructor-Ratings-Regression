@@ -529,8 +529,23 @@ To address multicollinearity and remove non-significant higher-order terms, step
 # Display the final model selected by stepwise regression
 formula(lm5)
 ```
+### Comparison of Full Additive Model I and Final Model
 
-### Table: Comparison of Models
+```{r}
+# 3. Combine into a 2x2 grid (Top row: Baseline, Bottom row: Final)
+diagnostic_comparison <- (p_res + p_qq) / (p_res_final + p_qq_final)
+
+# 4. Save using ggsave()
+ggsave(
+  filename = "../figures/model_diagnostics_comparison.png",
+  plot = diagnostic_comparison,
+  width = 10,
+  height = 8,
+  dpi = 300
+)
+```
+
+### Table: Comparison of All Models
 
 The table includes: adjusted $R^2$, Shapiro - Wilk p - value, and Breusch - Pagan p - value.
 
