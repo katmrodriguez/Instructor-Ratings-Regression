@@ -1,4 +1,3 @@
-# Instructor-Ratings-Regression
 # Instructor Ratings Analysis: A Multiple Linear Regression Study
 
 ![R](https://img.shields.io/badge/R-4.3%2B-blue.svg)
