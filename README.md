@@ -1,8 +1,9 @@
 # Instructor Ratings Analysis: A Multiple Linear Regression Study
 
-![R](https://img.shields.io/badge/R-4.3%2B-blue.svg)
-![Tidyverse](https://img.shields.io/badge/Ecosystem-Tidyverse-brightgreen.svg)
-![Status](https://img.shields.io/badge/Status-Completed-success.svg)
+[![Language](https://img.shields.io/badge/Language-R-blue.svg)](https://www.r-project.org/)
+[![Ecosystem](https://img.shields.io/badge/Ecosystem-Tidyverse-brightgreen.svg)](https://www.tidyverse.org/)
+[![Status](https://img.shields.io/badge/Status-Completed-success.svg)](#)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Executive Summary
 This project investigates key factors influencing overall instructor evaluation ratings across university courses using multiple linear regression techniques in **R**. Through iterative model building, exploratory diagnostic checks, and power transformations, this study addresses violations of key Ordinary Least Squares (OLS) assumptions (heteroscedasticity and non-normality) to deliver a robust, validated statistical model.
