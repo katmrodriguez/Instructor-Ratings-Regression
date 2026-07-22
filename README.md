@@ -5,6 +5,8 @@
 [![Status](https://img.shields.io/badge/Status-Completed-success.svg)](#)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+🔗 **[View the Interactive Full HTML Report Here](https://katmrodriguez.github.io/Instructor-Ratings-Regression/)**
+
 ## Executive Summary
 This project investigates key factors influencing overall instructor evaluation ratings across university courses using multiple linear regression techniques in **R**. Through iterative model building, exploratory diagnostic checks, and power transformations, this study addresses violations of key Ordinary Least Squares (OLS) assumptions (heteroscedasticity and non-normality) to deliver a robust, validated statistical model.
 
